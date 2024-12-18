@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: search
+  datasource:
+    url: jdbc:db2://10.11.1.111:50001/egp5db # Replace with your DB2 connection URL
+    username: USF60D5 # Replace with your database username
+    password: P@ssw0rd # Replace with your database password
+    driver-class-name: com.ibm.db2.jcc.DB2Driver # DB2 Driver class
+  jpa:
+    hibernate:
+      ddl-auto: none # Options: none, update, create, create-drop
+    show-sql: true # Enable to log SQL statements in the console
+  logging:
+    level:
+      org.hibernate.SQL: DEBUG # Show SQL logs in debug mode
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Log SQL parameter bindings
+
+server:
+  port: 9001
+  servlet:
+    contextPath: /api
