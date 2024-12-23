@@ -7,10 +7,6 @@ public class NGramsUtils {
 
     public static List<String> generateNGrams(String originalString, int n) {
         List<String> nGrams = new ArrayList<>();
-        if (n == 0) {
-            return nGrams;
-        }
-
         for (int i = 0; i < originalString.length() - (n - 1); i++) {
             nGrams.add(originalString.substring(i, i + n));
         }

@@ -1,5 +1,6 @@
 package com.fuzzy.search.service;
 
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -14,16 +15,13 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fuzzy.search.dto.ProductIdList;
 import com.fuzzy.search.dto.ProductResponse;
 import com.fuzzy.search.model.ProductTempModel;
 import com.fuzzy.search.repo.ProductTempModelRepository;
@@ -91,11 +89,9 @@ public class FuzzySearchService {
         return new PageImpl<>(data, pageable, idList.size());
     }
 
-    public Object fuzzySearchByRedis(String productName, Pageable pageable) {
-
+    public Object fuzzySearchByRedis(String productName, Pageable pageable) throws Exception {
         int N = 3;
         List<String> nGramList = NGramsUtils.generateNGrams(productName, N);
-
         List<Set<Integer>> productResponses = new ArrayList<>();
 
         for (String string : nGramList) {
@@ -114,8 +110,10 @@ public class FuzzySearchService {
                 ProductResponse productResponse = objectMapper.readValue(response.body(), ProductResponse.class);
 
                 productResponses.add(productResponse.getProductId());
-            } catch (Exception e) {
-                System.out.println("error");
+            } catch (ConnectException e) {
+                throw new ConnectException("Connection to Redis is fail");
+            } catch (Exception e2) {
+                throw new Exception(e2);
             }
         }
 
