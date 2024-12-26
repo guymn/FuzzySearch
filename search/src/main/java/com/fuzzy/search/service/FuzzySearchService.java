@@ -20,7 +20,6 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fuzzy.search.dto.ProductResponse;
 import com.fuzzy.search.model.ProductTempModel;
@@ -39,16 +38,11 @@ public class FuzzySearchService {
     public static final String OR = " OR ";
 
     public List<ProductTempModel> fuzzySearch(String productName, Pageable pageable) {
+        int N = 2;
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT * FROM SCAT.PRODUCT_TEMP P WHERE 1 = 1 ");
-
-        int n = 3;
-        if (productName.length() < n) {
-            n = productName.length();
-        }
-
-        List<String> nGrams = NGramsUtils.generateNGrams(productName, n);
+        List<String> nGrams = NGramsUtils.generateNGrams(productName, N);
         List<String> listCondition = NGramsUtils.getListConditionString(nGrams, "p.PRODUCT_NAME");
 
         if (!listCondition.isEmpty()) {
@@ -90,7 +84,7 @@ public class FuzzySearchService {
     }
 
     public Object fuzzySearchByRedis(String productName, Pageable pageable) throws Exception {
-        int N = 3;
+        int N = 2;
         List<String> nGramList = NGramsUtils.generateNGrams(productName, N);
         List<Set<Integer>> productResponses = new ArrayList<>();
 
@@ -112,8 +106,8 @@ public class FuzzySearchService {
                 productResponses.add(productResponse.getProductId());
             } catch (ConnectException e) {
                 throw new ConnectException("Connection to Redis is fail");
-            } catch (Exception e2) {
-                throw new Exception(e2);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
         }
 
@@ -131,29 +125,7 @@ public class FuzzySearchService {
         return findByIds(sortedProductIdSet, pageable);
     }
 
-    public ProductTempModel createProductTemp(ProductTempModel productTempModel) throws JsonProcessingException {
-        ProductTempModel p = productTempModelRepository.save(productTempModel);
-
-        productTempModel.setProductId(p.getProductId());
-        String url = "http://localhost:9000/api/ngrams";
-
-        HttpClient client = HttpClient.newHttpClient();
-
-        // Serialize the productTempModel object to JSON
-        ObjectMapper objectMapper = new ObjectMapper();
-        String requestBody = objectMapper.writeValueAsString(productTempModel);
-
-        // Create a GET HttpRequest
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .build();
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("StatusCode Create NGram of ProductTemp : " + response.statusCode());
-        } catch (Exception e) {
-            System.out.println("error");
-        }
-        return p;
+    public Page<ProductTempModel> findAllProductTemp(Pageable pageable) {
+        return productTempModelRepository.findAll(pageable);
     }
 }

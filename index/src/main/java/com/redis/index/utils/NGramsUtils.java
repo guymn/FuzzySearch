@@ -1,4 +1,4 @@
-package com.fuzzy.search.utils;
+package com.redis.index.utils;
 
 import java.util.ArrayList;
 import java.util.List;

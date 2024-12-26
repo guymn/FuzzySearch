@@ -27,12 +27,12 @@ public class ProductNGramsController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> createProductNGrams(@RequestBody ProductTempModel body) {
-        peoductNGramsService.createProductNGramsByProductTempModel(body);
+    public ResponseEntity<?> createProductNGrams(@RequestBody ProductTempModel body, int N) {
+        peoductNGramsService.createProductNGramsByProductTempModel(body, N);
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-    @GetMapping("addN")
+    @GetMapping("addAll")
     public ResponseEntity<?> createProductNGramsWithJSON(Pageable pageable) {
         Object productNGrams = peoductNGramsService.createProductNGramsFromAllProduct(pageable);
         return ResponseEntity.status(HttpStatus.CREATED).body(productNGrams);

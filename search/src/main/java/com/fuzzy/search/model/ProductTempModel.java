@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "PRODUCT_TEMP", schema = "SCAT", catalog = "")
-public class ProductTempModel extends AbstractAuditingModel implements Serializable {
+public class ProductTempModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

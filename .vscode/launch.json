@@ -24,5 +24,11 @@
       "mainClass": "com.fuzzy.search.SearchApplication",
       "projectName": "search"
     }
+  ],
+  "compounds": [
+    {
+      "name": "Run Index and Search",
+      "configurations": ["IndexApplication", "SearchApplication"]
+    }
   ]
 }

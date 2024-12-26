@@ -9,13 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fuzzy.search.model.ProductTempModel;
 import com.fuzzy.search.response.Response;
 import com.fuzzy.search.service.FuzzySearchService;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/fuzzySearch")
@@ -73,12 +70,12 @@ public class FuzzySearchController {
         }
     }
 
-    @PostMapping("createProductTemp")
-    public ResponseEntity<Response> createProductTemp(@RequestBody ProductTempModel productTempModel) {
+    @GetMapping("findAll")
+    public ResponseEntity<Response> findAllProductTemp(Pageable pageable) {
         Response response = new Response();
         response.setTimestamp(new Date());
         try {
-            response.setPayload(fuzzySearchService.createProductTemp(productTempModel));
+            response.setPayload(fuzzySearchService.findAllProductTemp(pageable));
             response.setStatus(HttpStatus.OK.value());
             response.setCode(HttpStatus.OK.getReasonPhrase());
             return ResponseEntity.ok(response);

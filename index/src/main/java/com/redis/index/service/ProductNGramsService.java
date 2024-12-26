@@ -4,7 +4,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -18,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redis.index.entity.ProductNGrams;
 import com.redis.index.entity.ProductTempModel;
 import com.redis.index.repository.ProductNGramsRepository;
+import com.redis.index.utils.NGramsUtils;
 
 @Service
 public class ProductNGramsService {
@@ -28,12 +28,11 @@ public class ProductNGramsService {
         return productNGramsRepository.findByNgram(nGram).orElse(null);
     }
 
-    public void createProductNGramsByProductTempModel(ProductTempModel productTempModel) {
-        String cleanedString = productTempModel.getProductName().replaceAll("[^\\p{IsThai}a-zA-Z0-9]",
-                "");
+    public void createProductNGramsByProductTempModel(ProductTempModel productTempModel, int N) {
+        String cleanedString = productTempModel.getProductName().replaceAll("[^\\p{IsThai}a-zA-Z0-9]", "");
 
-        int N = 3;
-        List<String> nGramList = generateNGrams(cleanedString, N);
+        System.out.println("Product Name : " + cleanedString);
+        List<String> nGramList = NGramsUtils.generateNGrams(cleanedString, N);
 
         for (String s : nGramList) {
             ProductNGrams productNGrams;
@@ -47,6 +46,7 @@ public class ProductNGramsService {
             }
             productNGrams.getProductId().add(productTempModel.getProductId());
 
+            System.out.println("NGram : " + productNGrams.getNgram());
             productNGramsRepository.save(productNGrams);
         }
 
@@ -55,7 +55,7 @@ public class ProductNGramsService {
     public Object createProductNGramsFromAllProduct(Pageable pageable) {
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
-        String url = String.format("http://localhost:9001/api/test/findById?&page=%d&size=%d", page, size);
+        String url = String.format("http://localhost:9001/api/fuzzySearch/findAll?page=%d&size=%d", page, size);
 
         // Create an HttpClient instance
         HttpClient client = HttpClient.newHttpClient();
@@ -85,26 +85,7 @@ public class ProductNGramsService {
                             });
 
                     for (ProductTempModel productTempModel : productList) {
-                        String cleanedString = productTempModel.getProductName().replaceAll("[^\\p{IsThai}a-zA-Z0-9]",
-                                "");
-
-                        List<String> nStrings = generateNGrams(cleanedString, 3);
-
-                        for (String s : nStrings) {
-                            ProductNGrams productNGrams;
-                            ProductNGrams existingProductNGrams = retrieveNGramsByNgram(s);
-                            if (existingProductNGrams != null) {
-                                productNGrams = existingProductNGrams;
-                            } else {
-                                productNGrams = new ProductNGrams();
-                                productNGrams.setNgram(s);
-                                productNGrams.setProductId(new HashSet<>());
-                            }
-                            productNGrams.getProductId().add(productTempModel.getProductId());
-
-                            productNGramsRepository.save(productNGrams);
-                        }
-
+                        createProductNGramsByProductTempModel(productTempModel, 2);
                     }
 
                     return productList;
@@ -118,19 +99,6 @@ public class ProductNGramsService {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public List<String> generateNGrams(String originalString, int n) {
-        List<String> nGrams = new ArrayList<>();
-        if (n == 0) {
-            return nGrams;
-        }
-
-        for (int i = 0; i < originalString.length() - (n - 1); i++) {
-            nGrams.add(originalString.substring(i, i + n));
-        }
-
-        return nGrams;
     }
 
 }
